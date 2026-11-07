@@ -91,7 +91,13 @@ cd contracts && cargo test -p integration-tests         # sandbox tests (slow)
 
 The API is a single long-running container. Besides HTTP it runs the BullMQ workers and the chain-sync poller, so it needs a host that never sleeps, plus Postgres and Redis. The web app is a standard Next.js deployment.
 
-### API (Docker host with Postgres + Redis, e.g. Railway)
+### API on Railway
+
+1. Create a Railway project, add **Postgres** and **Redis**, then add a service from this GitHub repo.
+2. In the service settings, keep the root directory as `/` and set the config file path to `/api/railway.json`. That file selects `api/Dockerfile` and the `/api/health` check, and pins the service to one replica: the attack lock and the chain-sync poller live in memory.
+3. Add a volume mounted at `/data`.
+4. Set the variables below. `DATABASE_URL` and `REDIS_URL` come from the Railway plugins (`${{Postgres.DATABASE_URL}}`, `${{Redis.REDIS_URL}}`). Railway provides `PORT`.
+
 
 - Build with `api/Dockerfile`, using the repo root as the build context. On start, the container runs `prisma migrate deploy` and then the server.
 - Mount a volume at `/data`. Uploaded PDFs are stored in `/data/uploads`, unless R2 is configured.
