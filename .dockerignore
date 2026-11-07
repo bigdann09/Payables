@@ -1,0 +1,12 @@
+**/node_modules
+**/.env
+**/.env.local
+**/dist
+**/.next
+**/*.tsbuildinfo
+api/.data
+api/src/generated
+contracts
+web
+posts
+.git

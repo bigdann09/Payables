@@ -1,0 +1,23 @@
+# dependencies (pnpm store lives in the root node_modules)
+node_modules
+
+# secrets
+.env
+.env.local
+
+# build output and caches
+dist
+.next
+target
+*.tsbuildinfo
+
+# contract binaries are built by cargo-near (contracts/.gitignore keeps the vendored DAO wasm)
+*.wasm
+
+# social post drafts and images (kept locally, not published)
+posts/
+
+# local data, logs, OS files
+api/.data
+*.log
+.DS_Store

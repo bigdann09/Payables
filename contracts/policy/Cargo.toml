@@ -1,0 +1,22 @@
+[package]
+name = "policy"
+description = "Payables policy contract: allowlisted, rate-limited USDC payouts with Sputnik DAO escalation"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+near-sdk.workspace = true
+near-contract-standards.workspace = true
+
+[dev-dependencies]
+near-sdk = { workspace = true, features = ["unit-testing"] }
+
+# `cfg(near)` was introduced in `near-sdk` v5.27.0, and is expected cfg now
+[lints.rust.unexpected_cfgs]
+level = "warn"
+check-cfg = ['cfg(near)']

@@ -1,0 +1,10 @@
+{
+  "name": "payables",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "scripts": {
+    "dev:api": "pnpm --filter api start:dev",
+    "dev:web": "pnpm --filter web dev",
+    "db:up": "docker compose up -d"
+  }
+}

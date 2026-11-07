@@ -1,0 +1,155 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum PayeeStatus {
+  active
+  pending_change
+}
+
+enum PoStatus {
+  open
+  closed
+}
+
+enum InvoiceStatus {
+  received
+  extracting
+  needs_review
+  blocked
+  scheduled
+  paying
+  pending_approval
+  paid
+  failed
+  rejected
+}
+
+model Company {
+  id               String          @id @default(cuid())
+  name             String
+  policyContractId String
+  daoId            String
+  /// USDC base units (6 decimals), as string
+  autoPayLimit     String
+  /// USDC base units (6 decimals), as string
+  dailyCap         String
+  telegramChatId   String?
+  notifyEmail      String?
+  createdAt        DateTime        @default(now())
+  payees           Payee[]
+  purchaseOrders   PurchaseOrder[]
+  invoices         Invoice[]
+  activity         ActivityLog[]
+  flaggedAddresses FlaggedAddress[]
+}
+
+model Payee {
+  id                   String          @id @default(cuid())
+  companyId            String
+  company              Company         @relation(fields: [companyId], references: [id])
+  name                 String
+  email                String
+  nearAccountId        String
+  status               PayeeStatus     @default(active)
+  /// Requested new account while status = pending_change (DAO approval)
+  pendingNearAccountId String?
+  /// DAO proposal id for the pending account change
+  pendingChangeProposalId String?
+  createdAt            DateTime        @default(now())
+  purchaseOrders       PurchaseOrder[]
+  invoices             Invoice[]
+
+  @@unique([companyId, nearAccountId])
+  @@index([companyId])
+}
+
+model PurchaseOrder {
+  id          String    @id @default(cuid())
+  companyId   String
+  company     Company   @relation(fields: [companyId], references: [id])
+  payeeId     String
+  payee       Payee     @relation(fields: [payeeId], references: [id])
+  number      String
+  /// USDC base units
+  amount      String
+  description String
+  status      PoStatus  @default(open)
+  createdAt   DateTime  @default(now())
+  invoices    Invoice[]
+
+  @@unique([companyId, number])
+}
+
+model Invoice {
+  id            String         @id @default(cuid())
+  companyId     String
+  company       Company        @relation(fields: [companyId], references: [id])
+  payeeId       String?
+  payee         Payee?         @relation(fields: [payeeId], references: [id])
+  poId          String?
+  po            PurchaseOrder? @relation(fields: [poId], references: [id])
+  /// null until extraction completes
+  number        String?
+  /// USDC base units; null until extraction completes
+  amount        String?
+  currency      String         @default("USDC")
+  dueDate       DateTime?
+  pdfKey        String
+  pdfHash       String
+  extracted     Json           @default("{}")
+  riskFlags     Json           @default("[]")
+  status        InvoiceStatus  @default(received)
+  txHash        String?
+  daoProposalId String?
+  paidAt        DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  activity      ActivityLog[]
+
+  @@index([companyId, status])
+  @@index([companyId, pdfHash])
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  invoiceId String?
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id])
+  type      String
+  message   String
+  data      Json     @default("{}")
+  createdAt DateTime @default(now())
+
+  @@index([companyId, createdAt])
+  @@index([invoiceId])
+}
+
+/// Accounts an invoice or attack tried to get paid. Registering one as a payee requires an explicit override.
+model FlaggedAddress {
+  id        String   @id @default(cuid())
+  companyId String
+  company   Company  @relation(fields: [companyId], references: [id])
+  account   String
+  /// Risk code that caught it (PAYEE_MISMATCH, PROMPT_INJECTION, DIRECT_ATTACK, ...)
+  reason    String
+  /// "invoice" (real pipeline) or "attack" (judge mode)
+  source    String
+  /// Largest amount it was asked to receive (USDC base units), if known
+  amount    String?
+  invoiceId String?
+  hits      Int      @default(1)
+  firstSeen DateTime @default(now())
+  lastSeen  DateTime @default(now())
+
+  @@unique([companyId, account])
+  @@index([companyId, lastSeen])
+}

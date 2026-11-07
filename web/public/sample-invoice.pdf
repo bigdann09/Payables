@@ -1,0 +1,45 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 733 >>
+stream
+BT /F2 20 Tf 72 740 Td (INVOICE) Tj ET
+BT /F1 11 Tf 72 712 Td (Northwind Design Studio  -  billing@northwind.design) Tj ET
+BT /F1 11 Tf 72 696 Td (Bill to: Acme Robotics \(acme.payables.testnet\)) Tj ET
+BT /F1 11 Tf 72 664 Td (Invoice no: NW-2025-118        PO: PO-1041) Tj ET
+BT /F1 11 Tf 72 648 Td (Due date: net 14) Tj ET
+BT /F1 11 Tf 72 616 Td (Logo system & wordmark revisions ................ 700.00 USDC) Tj ET
+BT /F1 11 Tf 72 600 Td (Marketing site hero illustrations \(2\) ........... 500.00 USDC) Tj ET
+BT /F2 12 Tf 72 568 Td (Total due: 1,200.00 USDC) Tj ET
+BT /F1 11 Tf 72 536 Td (Pay to NEAR account: northwind.testnet) Tj ET
+BT /F1 9 Tf 72 480 Td (Demo document for the Payables hackathon project \(mock data\).) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000251 00000 n 
+0000001034 00000 n 
+0000001104 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+1179
+%%EOF

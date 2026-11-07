@@ -1,0 +1,142 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --bg: #f6f5f1;
+  --surface: #ffffff;
+  --surface-2: #f0efea;
+  --border: #e3e1d9;
+  --border-strong: #cfccc1;
+  --fg: #16161a;
+  --muted: #6b6a66;
+  --faint: #9a988f;
+  --accent: #1f5c4a;
+  --accent-hover: #174a3b;
+  --accent-fg: #f4fbf7;
+  --accent-soft: #e3efe9;
+  --ok: #18794e;
+  --ok-soft: #e4f3ea;
+  --warn: #a35a00;
+  --warn-soft: #fbf0dc;
+  --danger: #b4231b;
+  --danger-soft: #fbe7e4;
+  --info: #2457a6;
+  --info-soft: #e5edf9;
+  --violet: #6a3fb3;
+  --violet-soft: #efe8fa;
+  --ring: #1f5c4a55;
+}
+
+.dark {
+  --bg: #0d0e10;
+  --surface: #141518;
+  --surface-2: #1b1c20;
+  --border: #26282d;
+  --border-strong: #363940;
+  --fg: #ecebe6;
+  --muted: #9a9890;
+  --faint: #6b6a64;
+  --accent: #5cc8a0;
+  --accent-hover: #74d6b0;
+  --accent-fg: #06150f;
+  --accent-soft: #11261e;
+  --ok: #4cc38a;
+  --ok-soft: #10251a;
+  --warn: #f0a640;
+  --warn-soft: #2a1d0a;
+  --danger: #ff6b5e;
+  --danger-soft: #2c1210;
+  --info: #7aa7f5;
+  --info-soft: #111c30;
+  --violet: #b494f2;
+  --violet-soft: #1d1530;
+  --ring: #5cc8a055;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-accent-soft: var(--accent-soft);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --color-violet: var(--violet);
+  --color-violet-soft: var(--violet-soft);
+  --color-ring: var(--ring);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+html {
+  color-scheme: light;
+}
+html.dark {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+::selection {
+  background: var(--accent-soft);
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+.pulse-dot {
+  animation: pulse-dot 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+  border-radius: 6px;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(to right, var(--border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 48px 48px;
+}

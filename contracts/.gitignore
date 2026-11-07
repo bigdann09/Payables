@@ -1,0 +1,3 @@
+/target
+# The repo root ignores *.wasm; keep the vendored Sputnik DAO binaries used by the tests.
+!/res/*.wasm
