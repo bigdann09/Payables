@@ -18,7 +18,7 @@ const STATUS_TONE = { InProgress: "violet", Approved: "ok", Rejected: "danger", 
 export function DaoVote({ daoId, proposalId, onVoted, className }: { daoId: string; proposalId: string | number; onVoted?: () => void; className?: string }) {
   const id = Number(proposalId);
   const { accountId, signIn, call, ready } = useWallet();
-  const proposal = useSWR(["dao-proposal", daoId, id], () => getProposal(daoId, id), { refreshInterval: 5000 });
+  const proposal = useSWR(["dao-proposal", daoId, id], () => getProposal(daoId, id), { refreshInterval: 5000, errorRetryCount: 6, errorRetryInterval: 2000 });
   const policy = useSWR(["dao-policy", daoId], () => getPolicy(daoId));
   const [busy, setBusy] = useState<"VoteApprove" | "VoteReject" | null>(null);
   const [tx, setTx] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export function DaoVote({ daoId, proposalId, onVoted, className }: { daoId: stri
       </div>
 
       <div className="space-y-3 px-4 py-3 text-[13px]">
-        {proposal.error && <div className="text-danger">Could not load the proposal from NEAR RPC.</div>}
+        {proposal.error && !p && <div className="text-danger">Could not load the proposal from NEAR RPC.</div>}
         {p && <p className="text-muted">{p.description}</p>}
 
         {p && (

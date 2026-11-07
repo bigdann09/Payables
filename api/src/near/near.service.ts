@@ -160,7 +160,7 @@ export class NearService implements OnModuleInit {
     return this.view('get_payee', { account_id: accountId });
   }
 
-  /** Allowlist check that THROWS on RPC errors instead of returning null (judge-mode safety gate). */
+  /** Allowlist check that THROWS on RPC errors instead of returning null (red-team safety gate). */
   async isAllowlistedStrict(accountId: string): Promise<boolean> {
     if (this.sim) return this.sim.getPayee(accountId) != null;
     const v = await this.provider!.callFunction(config.near.policyContractId, 'get_payee', { account_id: accountId });

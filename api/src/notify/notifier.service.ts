@@ -82,7 +82,7 @@ export class NotifierService {
     };
   }
 
-  /** Plain Telegram alert (judge-mode attacks). Never throws. */
+  /** Plain Telegram alert (red-team attacks). Never throws. */
   async sendTelegramText(chatId: string | null | undefined, subject: string, body: string, link?: string): Promise<string> {
     const target = chatId ?? config.telegram.defaultChatId;
     const html = `<b>${esc(subject)}</b>\n${esc(body)}${link ? `\n<a href="${esc(link)}">View transaction</a>` : ''}`;

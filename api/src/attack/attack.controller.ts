@@ -27,7 +27,7 @@ const Direct = z.object({
 
 const ip = (req: Request) => String(req.headers['x-forwarded-for'] ?? '').split(',')[0].trim() || req.ip || 'unknown';
 
-/** Public, wallet-less judge mode. See AttackService for the "never moves funds" invariant. */
+/** Public red team (no login). See AttackService for the "never moves funds" invariant. */
 @Controller('attack')
 export class AttackController {
   constructor(

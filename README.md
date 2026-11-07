@@ -11,7 +11,7 @@ Payables is an AI accounts-payable agent that pays supplier invoices in USDC on 
 
 A compromised or prompt-injected agent still can't pay anyone outside that policy.
 
-- **Judge mode** (`/try`): attack the live testnet contract from your browser, without a wallet.
+- **Red team** (`/red-team`): you hold a compromised agent's key; try to drain the treasury. Attacks run against the live testnet contract.
 - **Dashboard** (`/dashboard`): invoices, payees, purchase orders, DAO votes and flagged addresses.
 - **Contractor portal** (`/portal`): where suppliers submit invoices.
 
@@ -23,12 +23,12 @@ See [SPEC.md](SPEC.md) for the full spec and change log.
 .
 ├── api/                         NestJS API: HTTP, BullMQ workers (extract → pay → notify), chain sync
 │   ├── Dockerfile               production image (build from the repo root)
-│   ├── fixtures/                demo invoice PDFs (also used by judge-mode presets)
+│   ├── fixtures/                demo invoice PDFs (also used by red-team presets)
 │   ├── prisma/                  schema, migrations, seed (Postgres)
 │   ├── scripts/                 fixture generator
 │   ├── src/
 │   │   ├── api/                 REST controllers: company, invoices, payees/POs, misc + dev DAO routes
-│   │   ├── attack/              judge mode: preset/upload/rogue-agent attacks (never moves funds)
+│   │   ├── attack/              red team: preset/upload/rogue-agent attacks (never moves funds)
 │   │   ├── extraction/          NEAR AI extractor, deterministic rules, prompt-injection detector
 │   │   ├── flagged/             flagged addresses (targets of blocked invoices and attacks)
 │   │   ├── invoices/            pipeline (extract → rules → schedule → pay) and chain sync
@@ -40,7 +40,7 @@ See [SPEC.md](SPEC.md) for the full spec and change log.
 ├── web/                         Next.js 16 (App Router, Tailwind v4)
 │   ├── app/
 │   │   ├── page.tsx             landing page
-│   │   ├── try/                 judge mode
+│   │   ├── red-team/            red team
 │   │   ├── dashboard/           company dashboard (invoices, payees, POs, settings)
 │   │   └── portal/              contractor portal
 │   ├── components/              UI kit, status pills, DAO vote card, activity feed
@@ -109,7 +109,7 @@ The API is a single long-running container. Besides HTTP it runs the BullMQ work
 - Optional:
   - R2: `R2_*`
   - Email: `RESEND_API_KEY`
-  - Judge-mode limits: `ATTACK_PER_IP_PER_10MIN`, `ATTACK_GLOBAL_PER_HOUR`, `ATTACK_UPLOADS_PER_DAY`
+  - Red-team limits: `ATTACK_PER_IP_PER_10MIN`, `ATTACK_GLOBAL_PER_HOUR`, `ATTACK_UPLOADS_PER_DAY`
 - Health check: `GET /api/health`.
 
 ### Web (Vercel)
@@ -117,6 +117,6 @@ The API is a single long-running container. Besides HTTP it runs the BullMQ work
 - Set the project's root directory to `web`.
 - Set `NEXT_PUBLIC_API_URL` to `https://<api-host>/api`. Optionally set `NEXT_PUBLIC_NEAR_RPC_URL`.
 
-## Judge mode safety
+## Red team safety
 
-Judge mode never moves funds and never opens DAO proposals. It only submits a payment when the contract is certain to refuse it: the payee isn't allowlisted, or the invoice hash was already used. Both conditions are checked on-chain right before every submission. Attack runs are not stored as invoices; only the targeted addresses are remembered. Rate limits are applied per visitor and globally, and uploaded PDFs, which are read by the AI model, have a daily cap.
+Red team never moves funds and never opens DAO proposals. It only submits a payment when the contract is certain to refuse it: the payee isn't allowlisted, or the invoice hash was already used. Both conditions are checked on-chain right before every submission. Attack runs are not stored as invoices; only the targeted addresses are remembered. Rate limits are applied per visitor and globally, and uploaded PDFs, which are read by the AI model, have a daily cap.

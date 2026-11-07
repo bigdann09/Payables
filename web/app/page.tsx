@@ -16,8 +16,8 @@ export default function Landing() {
       <header className="relative z-10 mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Logo />
         <div className="flex-1" />
-        <Link href="/try" className="hidden text-[13px] text-muted hover:text-fg sm:block">
-          Try to break it
+        <Link href="/red-team" className="hidden text-[13px] text-muted hover:text-fg sm:block">
+          Red team
         </Link>
         <Link href="/portal" className="hidden text-[13px] text-muted hover:text-fg sm:block">
           Contractor portal
@@ -45,8 +45,8 @@ export default function Landing() {
             <Link href="/dashboard" className={buttonClass("primary", "md", "h-10 px-4")}>
               Open company dashboard <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link href="/try" className={buttonClass("secondary", "md", "h-10 px-4")}>
-              <Swords className="h-4 w-4 text-danger" /> Attack the live contract
+            <Link href="/red-team" className={buttonClass("secondary", "md", "h-10 px-4")}>
+              <Swords className="h-4 w-4 text-danger" /> Red-team the treasury
             </Link>
           </div>
           <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4 border-t border-border pt-5 text-[13px]">

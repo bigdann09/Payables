@@ -78,7 +78,7 @@ export function AttackLab() {
       <div className="grid-bg pointer-events-none absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_at_30%_0%,black,transparent_65%)]" />
       <header className="relative z-10 mx-auto flex h-14 w-full max-w-6xl items-center gap-4 px-4 sm:px-6">
         <Logo />
-        <span className="rounded-full border border-danger/30 bg-danger-soft px-2 py-0.5 text-[11px] font-medium text-danger">Judge mode</span>
+        <span className="rounded-full border border-danger/30 bg-danger-soft px-2 py-0.5 text-[11px] font-medium text-danger">Red team</span>
         <div className="flex-1" />
         <ThemeToggle />
         <Link href="/dashboard" className={buttonClass("secondary", "sm")}>
@@ -91,10 +91,12 @@ export function AttackLab() {
         <section className="grid gap-8 lg:grid-cols-[1.2fr_1fr] lg:items-end">
           <div>
             <h1 className="text-[34px] font-semibold leading-[1.08] tracking-[-0.03em] sm:text-[46px]">
-              Try to make the agent <span className="text-danger">pay you.</span>
+              You have the agent&apos;s key.
+              <br />
+              <span className="text-danger">Drain the treasury.</span>
             </h1>
             <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-muted">
-              Each attack runs for real: the invoice goes through NEAR AI and the rule checks, then we assume the agent is compromised and let it sign the payment with its real key. The policy contract on NEAR testnet gets the last word. You don&apos;t need a wallet.
+              Assume the AI agent that pays Acme&apos;s bills has been compromised. Every attack below is signed with its real key and sent to the treasury&apos;s policy contract on NEAR testnet. That contract only pays suppliers the DAO has approved, and anything over 5 USDC waits for a council vote.
             </p>
           </div>
           <div className="grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-border bg-border text-[13px]">
@@ -158,7 +160,7 @@ export function AttackLab() {
               </span>
               <div>
                 <div className="text-[15px] font-semibold">Rogue agent</div>
-                <div className="text-[13px] text-muted">Skip the invoice, the AI and the rules. The agent pays whoever you say.</div>
+                <div className="text-[13px] text-muted">Forget invoices. Use the agent&apos;s key to pay any account, any amount.</div>
               </div>
             </div>
             <div className="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -179,8 +181,8 @@ export function AttackLab() {
                 <Upload className="h-4 w-4" />
               </span>
               <div>
-                <div className="text-[15px] font-semibold">Bring your own invoice</div>
-                <div className="text-[13px] text-muted">Craft a PDF and upload it (text-based, max 2 MB).</div>
+                <div className="text-[15px] font-semibold">Forge your own invoice</div>
+                <div className="text-[13px] text-muted">Upload a crafted PDF (text-based, max 2 MB) and see what the agent does with it.</div>
               </div>
             </div>
             <input
@@ -214,7 +216,7 @@ export function AttackLab() {
                 <div>
                   <Swords className="mx-auto h-6 w-6 text-faint" />
                   <div className="mt-2 text-[14px] font-medium">Pick an attack</div>
-                  <p className="mx-auto mt-1 max-w-sm text-[13px] text-muted">You&apos;ll see each check it went through, and the failed transaction on the NEAR explorer.</p>
+                  <p className="mx-auto mt-1 max-w-sm text-[13px] text-muted">You&apos;ll see every check it passed or failed, and the transaction the contract refused on the NEAR explorer.</p>
                 </div>
               </div>
             )}
@@ -251,7 +253,7 @@ export function AttackLab() {
               <div className="mb-1 flex items-center gap-1.5 text-[13px] font-semibold text-fg">
                 <ShieldCheck className="h-3.5 w-3.5 text-accent" /> Why this is safe to leave open
               </div>
-              Judge mode only sends a payment when the contract is sure to refuse it: the payee isn&apos;t allowlisted, or the invoice was already paid. It checks the chain right before every send. An attack aimed at a real supplier is stopped before it&apos;s sent, and nothing is saved as an invoice.
+              Red team only sends a payment when the contract is sure to refuse it: the payee isn&apos;t allowlisted, or the invoice was already paid. It checks the chain right before every send. An attack aimed at a real supplier is stopped before it&apos;s sent, and nothing is saved as an invoice.
             </div>
           </aside>
         </section>
@@ -299,8 +301,8 @@ function RunCard({ run }: { run: AttackRun }) {
       <div className={cn("flex items-start gap-3 border-b px-5 py-4", refused ? "border-ok/25 bg-ok-soft" : "border-warn/25 bg-warn-soft")}>
         {refused ? <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-ok" /> : <Ban className="mt-0.5 h-5 w-5 shrink-0 text-warn" />}
         <div className="min-w-0 flex-1">
-          <div className={cn("text-[15px] font-semibold", refused ? "text-ok" : "text-warn")}>{refused ? "Attack failed. No USDC moved." : run.headline}</div>
-          <div className="mt-0.5 text-[13px] text-muted">{refused ? run.headline : "Judge mode only sends payments the contract is certain to refuse."}</div>
+          <div className={cn("text-[15px] font-semibold", refused ? "text-ok" : "text-warn")}>{refused ? "The treasury held. No USDC moved." : run.headline}</div>
+          <div className="mt-0.5 text-[13px] text-muted">{refused ? run.headline : "Red team only sends payments the contract is certain to refuse."}</div>
         </div>
         {contract?.explorerUrl && (
           <a href={contract.explorerUrl} target="_blank" rel="noreferrer" className={buttonClass("secondary", "sm", "shrink-0")}>

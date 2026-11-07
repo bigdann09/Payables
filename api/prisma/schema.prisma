@@ -141,7 +141,7 @@ model FlaggedAddress {
   account   String
   /// Risk code that caught it (PAYEE_MISMATCH, PROMPT_INJECTION, DIRECT_ATTACK, ...)
   reason    String
-  /// "invoice" (real pipeline) or "attack" (judge mode)
+  /// "invoice" (real pipeline) or "attack" (red team)
   source    String
   /// Largest amount it was asked to receive (USDC base units), if known
   amount    String?

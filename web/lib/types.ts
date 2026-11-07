@@ -135,7 +135,7 @@ export interface PayeePatch {
   acknowledgeFlag?: boolean;
 }
 
-/** An account a blocked invoice or judge-mode attack tried to get paid. */
+/** An account a blocked invoice or red-team attack tried to get paid. */
 export interface FlaggedAddress {
   id: string;
   account: string;
@@ -206,7 +206,7 @@ export interface InvoiceDetail extends Invoice {
   activity?: ActivityLog[];
 }
 
-// ---- Judge mode (/try)
+// ---- Red team (/red-team)
 export type AttackStepStatus = "pass" | "block" | "skip" | "info" | "error";
 export interface AttackStep {
   key: "received" | "extract" | "rules" | "agent" | "contract" | "flagged";

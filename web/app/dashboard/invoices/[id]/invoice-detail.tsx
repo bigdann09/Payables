@@ -259,7 +259,8 @@ export function InvoiceDetail() {
         )}
       </div>
 
-      {inv.status === "pending_approval" && inv.daoProposalId != null && daoId && source !== "mock" && company?.integrations?.chain !== "simulated" && (
+      {/* Open proposals get vote buttons; decided ones stay visible as the council's on-chain record. */}
+      {inv.daoProposalId != null && daoId && source !== "mock" && company?.integrations?.chain !== "simulated" && (
         <DaoVote daoId={daoId} proposalId={inv.daoProposalId} onVoted={() => { void mutate(); refreshAll(); }} />
       )}
 

@@ -13,9 +13,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { sha256Hex } from '../storage/storage.service';
 
 /**
- * Judge mode: anyone can attack the live policy contract from the browser, without a wallet.
+ * Red team: anyone can attack the live policy contract from the browser with the agent's key.
  *
- * Safety invariant: judge mode NEVER moves funds and never opens DAO proposals. A request_payment is only
+ * Safety invariant: red team NEVER moves funds and never opens DAO proposals. A request_payment is only
  * submitted when the contract is certain to refuse it, i.e. the target account is not on the on-chain allowlist
  * or the invoice hash was already used. Both are checked against the contract right before submitting.
  * Attack runs are not stored as invoices; only the targeted addresses are remembered (flagged addresses).
@@ -139,7 +139,7 @@ export class AttackService {
     if (contract.refused) steps.push(await this.flag(account, 'DIRECT_ATTACK', amount));
     return this.finish('rogue-agent', steps, contract.refused ? 'refused_on_chain' : 'not_submitted', contract.refused
       ? `Refused on-chain: ${contract.reason}`
-      : 'Not submitted: judge mode only sends payments the contract is certain to refuse');
+      : 'Not submitted: red team only sends payments the contract is certain to refuse');
   }
 
   // ------------------------------------------------------------------ pipeline
@@ -216,7 +216,7 @@ export class AttackService {
       scenario,
       steps,
       rules.status === 'blocked' ? 'blocked_offchain' : 'not_submitted',
-      rules.status === 'blocked' ? 'Blocked by the rule checks' : 'Looks legitimate: judge mode does not pay real suppliers',
+      rules.status === 'blocked' ? 'Blocked by the rule checks' : 'Looks legitimate: red team does not pay real suppliers',
     );
   }
 
@@ -248,7 +248,7 @@ export class AttackService {
           key: 'contract',
           title,
           status: 'skip',
-          detail: `${t.account} is an allowlisted supplier, so this payment could really go through. Judge mode never moves funds, so it was not submitted.`,
+          detail: `${t.account} is an allowlisted supplier, so this payment could really go through. Red team never moves funds, so it was not submitted.`,
         },
       };
     }
@@ -317,7 +317,7 @@ export class AttackService {
     const agent = run.steps.find((s) => s.key === 'agent');
     await this.notifier.sendTelegramText(
       company?.telegramChatId,
-      '🛡 Attack refused on-chain (judge mode)',
+      '🛡 Treasury held: red-team attack refused on-chain',
       `${agent?.detail ?? ''}\n${run.headline}`,
       contract?.explorerUrl,
     );
@@ -334,7 +334,7 @@ export class AttackService {
   private rateLimit(ip: string) {
     const now = Date.now();
     this.global = this.global.filter((t) => now - t < 3_600_000);
-    if (this.global.length >= GLOBAL_PER_HOUR) throw new HttpException('Judge mode is busy; try again in a few minutes', HttpStatus.TOO_MANY_REQUESTS);
+    if (this.global.length >= GLOBAL_PER_HOUR) throw new HttpException('Red team is busy; try again in a few minutes', HttpStatus.TOO_MANY_REQUESTS);
     const mine = (this.hits.get(ip) ?? []).filter((t) => now - t < WINDOW_MS);
     if (mine.length >= PER_IP) throw new HttpException(`Slow down: ${PER_IP} attacks per 10 minutes per visitor`, HttpStatus.TOO_MANY_REQUESTS);
     mine.push(now);

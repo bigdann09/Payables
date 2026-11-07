@@ -123,12 +123,12 @@ async function call<T>(real: () => Promise<T>, fallback: () => Promise<T>): Prom
 
 const json = (body: unknown) => JSON.stringify(body);
 
-/** Judge mode talks to the live API only: a mocked "on-chain refusal" would be fake evidence. */
+/** Red team talks to the live API only: a mocked "on-chain refusal" would be fake evidence. */
 const live = async <T,>(fn: () => Promise<T>): Promise<T> => {
   try {
     return await fn();
   } catch (e) {
-    if (e instanceof Unreachable) throw new ApiError("The Payables API is offline right now, so judge mode can't reach the contract.", 0);
+    if (e instanceof Unreachable) throw new ApiError("The Payables API is offline right now, so red team can't reach the contract.", 0);
     throw e;
   }
 };
