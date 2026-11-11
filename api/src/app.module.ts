@@ -17,6 +17,8 @@ import { NotifierService } from './notify/notifier.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { ExtractProcessor, NotifyProcessor, PayProcessor } from './queues/processors';
 import { EXTRACT_QUEUE, NOTIFY_QUEUE, PAY_QUEUE } from './queues/queue-names';
+import { SamplesController } from './samples/samples.controller';
+import { SamplesService } from './samples/samples.service';
 import { StorageService } from './storage/storage.service';
 
 const keep = { removeOnComplete: { count: 500 }, removeOnFail: { count: 1000 } };
@@ -31,11 +33,12 @@ const keep = { removeOnComplete: { count: 500 }, removeOnFail: { count: 1000 } }
       { name: NOTIFY_QUEUE, defaultJobOptions: { attempts: 6, backoff: { type: 'exponential', delay: 3000 }, ...keep } },
     ),
   ],
-  controllers: [CompanyController, InvoicesController, PayeesController, MiscController, AttackController],
+  controllers: [CompanyController, InvoicesController, PayeesController, MiscController, AttackController, SamplesController],
   providers: [
     ActivityService,
     FlaggedService,
     AttackService,
+    SamplesService,
     StorageService,
     ExtractorService,
     NearService,

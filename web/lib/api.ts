@@ -16,6 +16,7 @@ import type {
   PayeePatch,
   PurchaseOrder,
   PurchaseOrderCreate,
+  SampleList,
   Stats,
 } from "./types";
 
@@ -196,4 +197,39 @@ export const api = {
       () => http(`/dev/dao/invoices/${encodeURIComponent(id)}/approve`, { method: "POST" }),
       () => mock.simulateDaoApproval(id),
     ),
+};
+
+const MOCK_SAMPLES: SampleList = {
+  samples: [
+    { id: "clean", title: "Clean invoice", expected: "Passes every check and is scheduled for payment." },
+    { id: "tampered", title: "Tampered payout account", expected: "Blocked: the invoice asks to be paid to an account that is not on the allowlist." },
+    { id: "injection", title: "Prompt injection", expected: "Blocked: hidden instructions tell the AI to pay an attacker." },
+    { id: "over-limit", title: "Over the auto-pay limit", expected: "Escalated to a DAO proposal for the council to vote on." },
+  ],
+  autoPayLimit: null,
+  leftToday: 0,
+};
+
+/** Portal "try a sample": the API renders a fresh PDF (unique invoice number) each time. */
+export const samplesApi = {
+  list: () => call<SampleList>(() => http("/samples"), async () => MOCK_SAMPLES),
+  submit: (id: string) =>
+    call<Invoice>(
+      () => http(`/samples/${encodeURIComponent(id)}`, { method: "POST" }, 15_000),
+      () => mock.uploadInvoice(new File([""], `sample-${id}.pdf`, { type: "application/pdf" })),
+    ),
+  /** Downloads a fresh sample PDF (sent with the company header, so it can't be a plain link). */
+  download: async (id: string) => {
+    const headers = new Headers();
+    if (COMPANY_ID) headers.set("x-company-id", COMPANY_ID);
+    const res = await fetch(`${API_URL}/samples/${encodeURIComponent(id)}/pdf`, { headers, cache: "no-store" }).catch(() => null);
+    if (!res?.ok) throw new ApiError("Couldn't generate the sample PDF; the API may be offline.", res?.status ?? 0);
+    const name = /filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? `sample-${id}.pdf`;
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  },
 };

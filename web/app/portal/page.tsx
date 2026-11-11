@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { FileUp, FileText, Lock, X } from "lucide-react";
+import { SampleInvoices } from "@/components/sample-invoices";
 import { Button, Card, ErrorNote, Field, Select } from "@/components/ui";
 import { api } from "@/lib/api";
 import { usePayees } from "@/lib/hooks";
@@ -112,6 +113,8 @@ export default function PortalUploadPage() {
           </Button>
         </div>
       </Card>
+
+      <SampleInvoices />
 
       <div className="flex items-start gap-2 text-xs text-muted">
         <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" />

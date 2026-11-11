@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue, UnrecoverableError } from 'bullmq';
+import { randomUUID } from 'node:crypto';
 import { ActivityService } from '../activity/activity.service';
 import { formatUsdc } from '../common/amount';
 import { config } from '../config';
@@ -12,7 +13,7 @@ import { ChainInvoice, ContractRejectedError, NearService, PaymentResult } from 
 import { NotifierService } from '../notify/notifier.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { EXTRACT_QUEUE, ExtractJob, NOTIFY_QUEUE, NotifyJob, NotifyType, PAY_QUEUE, PayJob } from '../queues/queue-names';
-import { StorageService } from '../storage/storage.service';
+import { sha256Hex, StorageService } from '../storage/storage.service';
 
 /** Statuses from which the agent may submit `request_payment`. */
 const PAYABLE: InvoiceStatus[] = ['scheduled', 'needs_review'];
@@ -36,6 +37,25 @@ export class PipelineService {
   ) {}
 
   // ------------------------------------------------------------------ intake
+
+  /** Stores a received PDF, records it and queues extraction. Shared by portal uploads and sample invoices. */
+  async ingest(companyId: string, bytes: Uint8Array, fileName: string, declaredPayeeId?: string, extra: Record<string, unknown> = {}) {
+    const hash = sha256Hex(bytes);
+    const key = `invoices/${companyId}/${hash.slice(0, 16)}-${randomUUID()}.pdf`;
+    await this.storage.put(key, bytes);
+    const invoice = await this.prisma.invoice.create({
+      data: { companyId, pdfKey: key, pdfHash: hash, status: 'received', payeeId: declaredPayeeId || null, extracted: {}, riskFlags: [] },
+    });
+    await this.activity.record(
+      companyId,
+      'received',
+      `Invoice PDF received (${fileName}, ${bytes.length} bytes)`,
+      { fileName, sha256: hash, storage: this.storage.mode, ...extra },
+      invoice.id,
+    );
+    await this.enqueueExtract(invoice.id, declaredPayeeId || undefined);
+    return invoice;
+  }
 
   async enqueueExtract(invoiceId: string, declaredPayeeId?: string) {
     await this.extractQueue.add('extract', { invoiceId, declaredPayeeId }, { jobId: `extract-${invoiceId}` });

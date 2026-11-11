@@ -236,3 +236,16 @@ export interface AttackInfo {
   recent: AttackRun[];
   flagged: FlaggedAddress[];
 }
+
+/** "Try a sample" invoice offered in the contractor portal. */
+export interface SampleInvoice {
+  id: "clean" | "tampered" | "injection" | "over-limit";
+  title: string;
+  expected: string;
+}
+
+export interface SampleList {
+  samples: SampleInvoice[];
+  autoPayLimit: string | null;
+  leftToday: number;
+}

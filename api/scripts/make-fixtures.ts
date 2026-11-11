@@ -4,21 +4,10 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { renderInvoicePdf, type InvoiceDoc } from '../src/samples/invoice-pdf';
 
-interface Fixture {
+interface Fixture extends InvoiceDoc {
   file: string;
-  title: string;
-  invoiceNumber: string;
-  from: string;
-  fromAddress: string;
-  nearAccount: string;
-  poNumber: string;
-  issueDate: string;
-  dueDate: string;
-  items: { description: string; qty: number; unit: string; amount: string }[];
-  total: string;
-  notes: string[];
 }
 
 const fixtures: Fixture[] = [
@@ -89,46 +78,102 @@ const fixtures: Fixture[] = [
     total: '8.00',
     notes: ['Payment in USDC on NEAR within 10 days.'],
   },
+  // --- Extra test batch: three clean invoices (small amounts), then one per remaining rule.
+  {
+    file: '05-clean-northwind.pdf',
+    title: 'Clean: Northwind, under limit, matching PO',
+    invoiceNumber: 'NW-2026-0150',
+    from: 'Northwind Design Studio',
+    fromAddress: '12 Harbour Lane, Lisbon, Portugal',
+    nearAccount: 'northwind.payables.testnet',
+    poNumber: 'PO-1001',
+    issueDate: '2026-11-11',
+    dueDate: '2026-11-21',
+    items: [{ description: 'Social media banner set', qty: 3, unit: '0.25', amount: '0.75' }],
+    total: '0.75',
+    notes: ['Thank you for your business. Payment in USDC on NEAR.'],
+  },
+  {
+    file: '06-clean-bluepeak.pdf',
+    title: 'Clean: BluePeak, under limit, matching PO',
+    invoiceNumber: 'BP-3320',
+    from: 'BluePeak Consulting',
+    fromAddress: '8 Rue de la Paix, Paris, France',
+    nearAccount: 'bluepeak.payables.testnet',
+    poNumber: 'PO-1002',
+    issueDate: '2026-11-11',
+    dueDate: '2026-11-23',
+    items: [{ description: 'Treasury policy review call', qty: 2, unit: '0.60', amount: '1.20' }],
+    total: '1.20',
+    notes: ['Payment in USDC on NEAR within 10 days.'],
+  },
+  {
+    file: '07-clean-orbit.pdf',
+    title: 'Clean: Orbit Labs, under limit, matching PO, correct account',
+    invoiceNumber: 'ORB-0081',
+    from: 'Orbit Labs',
+    fromAddress: '400 Market St, San Francisco, CA',
+    nearAccount: 'orbit-labs.payables.testnet',
+    poNumber: 'PO-1003',
+    issueDate: '2026-11-11',
+    dueDate: '2026-11-20',
+    items: [{ description: 'Gas optimisation pass', qty: 1, unit: '0.60', amount: '0.60' }],
+    total: '0.60',
+    notes: ['Payment in USDC on NEAR.'],
+  },
+  {
+    file: '08-no-po.pdf',
+    title: 'Rule NO_PO: references a purchase order that does not exist',
+    invoiceNumber: 'BP-3321',
+    from: 'BluePeak Consulting',
+    fromAddress: '8 Rue de la Paix, Paris, France',
+    nearAccount: 'bluepeak.payables.testnet',
+    poNumber: 'PO-9999',
+    issueDate: '2026-11-11',
+    dueDate: '2026-11-24',
+    items: [{ description: 'Ad-hoc forum moderation support', qty: 1, unit: '0.90', amount: '0.90' }],
+    total: '0.90',
+    notes: ['Payment in USDC on NEAR within 10 days.'],
+  },
+  {
+    file: '09-exceeds-po.pdf',
+    title: 'Rule AMOUNT_EXCEEDS_PO: Orbit invoice above its 5.00 USDC PO (also over auto-pay limit)',
+    invoiceNumber: 'ORB-0082',
+    from: 'Orbit Labs',
+    fromAddress: '400 Market St, San Francisco, CA',
+    nearAccount: 'orbit-labs.payables.testnet',
+    poNumber: 'PO-1003',
+    issueDate: '2026-11-11',
+    dueDate: '2026-11-25',
+    items: [
+      { description: 'Smart contract audit follow-up', qty: 10, unit: '0.50', amount: '5.00' },
+      { description: 'Additional re-test round', qty: 1, unit: '1.00', amount: '1.00' },
+    ],
+    total: '6.00',
+    notes: ['Payment in USDC on NEAR.'],
+  },
+  {
+    file: '10-duplicate-number.pdf',
+    title: 'Rule DUPLICATE_NUMBER: reuses seeded invoice number NW-2026-0131',
+    invoiceNumber: 'NW-2026-0131',
+    from: 'Northwind Design Studio',
+    fromAddress: '12 Harbour Lane, Lisbon, Portugal',
+    nearAccount: 'northwind.payables.testnet',
+    poNumber: 'PO-1001',
+    issueDate: '2026-11-11',
+    dueDate: '2026-11-22',
+    items: [{ description: 'Brochure layout', qty: 1, unit: '1.10', amount: '1.10' }],
+    total: '1.10',
+    notes: ['Thank you for your business. Payment in USDC on NEAR.'],
+  },
 ];
 
-async function render(f: Fixture): Promise<Uint8Array> {
-  const doc = await PDFDocument.create();
-  doc.setTitle(`Invoice ${f.invoiceNumber}`);
-  doc.setAuthor(f.from);
-  doc.setSubject(f.title);
-  const page = doc.addPage([595, 842]);
-  const font = await doc.embedFont(StandardFonts.Helvetica);
-  const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-  let y = 790;
-  const line = (text: string, opts: { size?: number; bold?: boolean; x?: number; gap?: number } = {}) => {
-    page.drawText(text, { x: opts.x ?? 50, y, size: opts.size ?? 11, font: opts.bold ? bold : font, color: rgb(0.1, 0.1, 0.12) });
-    y -= opts.gap ?? (opts.size ?? 11) + 7;
-  };
-
-  line('INVOICE', { size: 24, bold: true, gap: 34 });
-  line(`Invoice Number: ${f.invoiceNumber}`);
-  line(`Issue Date: ${f.issueDate}`);
-  line(`Due Date: ${f.dueDate}`, { gap: 26 });
-  line(`From: ${f.from}`, { bold: true });
-  line(f.fromAddress, { size: 9 });
-  line(`NEAR Account: ${f.nearAccount}`, { gap: 26 });
-  line('Bill To: Acme', { bold: true });
-  line(`PO Number: ${f.poNumber}`, { gap: 26 });
-  line('Description | Qty | Unit price | Amount', { bold: true, size: 10 });
-  for (const it of f.items) line(`Item: ${it.description} | ${it.qty} | ${it.unit} | ${it.amount}`, { size: 10 });
-  y -= 10;
-  line(`Total: ${f.total} USDC`, { bold: true, size: 14, gap: 30 });
-  line('Payment Terms: Net 10, USDC (NEP-141) on NEAR', { size: 9, gap: 24 });
-  line('Notes:', { bold: true, size: 10 });
-  for (const n of f.notes) line(n, { size: 9 });
-  return doc.save();
-}
 
 async function main() {
   const dir = join(__dirname, '..', 'fixtures');
   mkdirSync(dir, { recursive: true });
   for (const f of fixtures) {
-    writeFileSync(join(dir, f.file), await render(f));
+    writeFileSync(join(dir, f.file), await renderInvoicePdf(f));
     console.log(`wrote fixtures/${f.file}  (${f.title})`);
   }
 }

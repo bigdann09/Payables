@@ -13,7 +13,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
 import { ActivityService } from '../activity/activity.service';
 import { CompanyId } from '../common/company.decorator';
@@ -21,7 +20,7 @@ import { ZodPipe } from '../common/zod.pipe';
 import { $Enums } from '../generated/prisma/client';
 import { PipelineService } from '../invoices/pipeline.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { sha256Hex, StorageService } from '../storage/storage.service';
+import { StorageService } from '../storage/storage.service';
 
 const STATUSES = Object.values($Enums.InvoiceStatus) as [string, ...string[]];
 const PayNow = z.object({ force: z.boolean().optional().default(false) });
@@ -69,21 +68,7 @@ export class InvoicesController {
       throw new BadRequestException(`Unknown payeeId ${payeeId}`);
     }
 
-    const hash = sha256Hex(bytes);
-    const key = `invoices/${companyId}/${hash.slice(0, 16)}-${randomUUID()}.pdf`;
-    await this.storage.put(key, bytes);
-    const invoice = await this.prisma.invoice.create({
-      data: { companyId, pdfKey: key, pdfHash: hash, status: 'received', payeeId: payeeId || null, extracted: {}, riskFlags: [] },
-    });
-    await this.activity.record(
-      companyId,
-      'received',
-      `Invoice PDF received (${file.originalname}, ${bytes.length} bytes)`,
-      { fileName: file.originalname, sha256: hash, storage: this.storage.mode },
-      invoice.id,
-    );
-    await this.pipeline.enqueueExtract(invoice.id, payeeId || undefined);
-    return invoice;
+    return this.pipeline.ingest(companyId, bytes, file.originalname, payeeId || undefined);
   }
 
   @Post(':id/pay-now')

@@ -2,7 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import useSWR, { useSWRConfig, type SWRConfiguration } from "swr";
-import { api, dataSource } from "./api";
+import { api, dataSource, samplesApi } from "./api";
 import { onMockChange } from "./mock-store";
 import type { InvoiceStatus } from "./types";
 
@@ -24,6 +24,7 @@ export const usePayees = () => useSWR("payees", api.listPayees, opts);
 export const usePurchaseOrders = () => useSWR("purchase-orders", api.listPurchaseOrders, opts);
 export const useFlagged = () => useSWR("flagged", api.listFlagged, opts);
 export const useActivity = () => useSWR("activity", api.listActivity, opts);
+export const useSamples = () => useSWR("samples", samplesApi.list, { ...opts, refreshInterval: 0 });
 
 /** Revalidate everything (after mutations). */
 export function useRefreshAll() {
