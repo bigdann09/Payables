@@ -23,7 +23,7 @@ import type {
 export const API_URL = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000/api").replace(/\/$/, "");
 const FORCE_MOCKS = process.env.NEXT_PUBLIC_USE_MOCKS === "true";
 const COMPANY_ID = process.env.NEXT_PUBLIC_COMPANY_ID;
-const TIMEOUT_MS = 4000;
+const TIMEOUT_MS = 10_000;
 const RETRY_AFTER_MS = 15_000;
 
 export class ApiError extends Error {
@@ -114,6 +114,9 @@ async function call<T>(real: () => Promise<T>, fallback: () => Promise<T>): Prom
     return r;
   } catch (e) {
     if (e instanceof Unreachable) {
+      // Once the real API has answered, a slow or dropped request is a transient error, not "offline":
+      // switching to mocks mid-session would swap real invoices for fake ones (and freeze live status pages).
+      if (source === "api") throw new ApiError("The Payables API is slow to respond; retrying…", 0);
       downUntil = Date.now() + RETRY_AFTER_MS;
       setSource("mock");
       return fallback();
