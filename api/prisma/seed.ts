@@ -85,7 +85,10 @@ async function main() {
   ];
   // On the real chain, skip rows that claim on-chain state (fake tx hashes, a DAO proposal that doesn't exist).
   const onChain = Boolean(process.env.AGENT_PRIVATE_KEY && process.env.OWNER_PRIVATE_KEY);
-  const rows = onChain ? seeds.filter((s) => !s.tx) : seeds;
+  // SEED_INVOICES=0: company, payees and POs only (e.g. a hosted deployment, where placeholder PDFs written
+  // here would not reach the server's storage and invoice history should come from real runs).
+  const withInvoices = process.env.SEED_INVOICES !== '0';
+  const rows = !withInvoices ? [] : onChain ? seeds.filter((s) => !s.tx) : seeds;
 
   for (const s of rows) {
     const key = `invoices/${company.id}/seed-${s.number}.pdf`;
